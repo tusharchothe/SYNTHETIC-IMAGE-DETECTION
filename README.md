@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="AI Image Detector" width="100%">
+  <img src="assets/banner.png" alt="AI Image Detector" width="100%">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 ## How it works
 
 <p align="center">
-  <img src="assets/pipeline.svg" alt="Animated pipeline: upload, validate, ResNet-50 and CLIP, compare, review queue" width="100%">
+  <img src="assets/pipeline.png" alt="Pipeline: upload, validate, ResNet-50 and CLIP, compare, review queue" width="100%">
 </p>
 
 1. **Upload**: the image is validated, hashed (SHA-256 + perceptual hash) and de-duplicated.
@@ -28,6 +28,35 @@
 3. **Triage**: disagreement or low confidence puts the image at the front of the review queue.
 4. **Label**: a reviewer records the verified class. Labels are stored apart from predictions.
 5. **Improve**: approved labels become versioned datasets, which feed retraining, guardrail evaluation and model promotion.
+
+### Flowchart
+
+<p align="center">
+  <img src="assets/flowchart.png" alt="Flowchart from image upload to model promotion" width="100%">
+</p>
+
+<details>
+<summary><b>Mermaid source (editable, renders natively on GitHub)</b></summary>
+
+```mermaid
+flowchart TD
+    A([Upload image]) --> B{Valid image?}
+    B -- No --> X1[Reject with error]
+    B -- Yes --> C{Duplicate?}
+    C -- Yes --> X2[Flag duplicate]
+    C -- No --> D["Run ResNet-50 + CLIP"]
+    D --> E{Models agree?}
+    E -- Yes --> F([Show result])
+    E -- No --> G[Add to review queue]
+    G --> H[Human labels image]
+    H --> I{Approved and eligible?}
+    I -- No --> X3[Excluded from dataset]
+    I -- Yes --> J[Build versioned dataset]
+    J --> K[Retrain and evaluate]
+    K --> L[Promote model]
+```
+
+</details>
 
 ---
 
@@ -126,9 +155,9 @@ For multi-user setups, `AIDETECT_ALLOWED_REVIEWERS`, `AIDETECT_REVIEWER_TOKEN`, 
 ## Using the UI
 
 <p align="center">
-  <img src="assets/ui-upload.svg" alt="Mockup of the Upload and Detect tab" width="100%">
+  <img src="assets/ui-upload.png" alt="Mockup of the Upload and Detect tab" width="100%">
 </p>
-<!-- The image above is an illustrative mockup. Replace assets/ui-upload.svg with a real screenshot (assets/ui-upload.png) when available. -->
+<!-- The image above is an illustrative mockup. Replace assets/ui-upload.png with a real screenshot when available. -->
 
 | Tab | Purpose |
 |-----|---------|
@@ -156,7 +185,7 @@ Scores from the two models are **not directly comparable**: they differ in archi
 ## Architecture
 
 <p align="center">
-  <img src="assets/architecture.svg" alt="System architecture" width="100%">
+  <img src="assets/architecture.png" alt="System architecture" width="100%">
 </p>
 
 | Component | Technology | Role |
@@ -171,7 +200,7 @@ Scores from the two models are **not directly comparable**: they differ in archi
 ### Lifecycle
 
 <p align="center">
-  <img src="assets/lifecycle.svg" alt="Human-in-the-loop lifecycle" width="80%">
+  <img src="assets/lifecycle.png" alt="Human-in-the-loop lifecycle" width="80%">
 </p>
 
 ---
