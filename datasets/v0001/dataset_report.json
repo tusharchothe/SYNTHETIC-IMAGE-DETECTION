@@ -1,0 +1,44 @@
+{
+  "benchmark_test_ids": [],
+  "case_balance": {
+    "correct_prediction": 1
+  },
+  "class_balance": {
+    "ai": 1
+  },
+  "dataset_version": "v0001",
+  "duplicate_counts": {},
+  "duplicate_total": 0,
+  "eligible_total": 1,
+  "excluded_counts": {
+    "disputed_label": 0,
+    "missing_file": 0,
+    "missing_predictions": 0,
+    "needs_review": 0,
+    "needs_second_review": 0,
+    "rejected_or_ineligible": 0,
+    "uncertain_label": 0,
+    "unreviewed": 1
+  },
+  "generated_at": "2026-10-20T17:31:42.834029+00:00",
+  "generator_balance": {
+    "gpt": 1
+  },
+  "source_balance": {
+    "simple_upload": 1
+  },
+  "split_counts": {
+    "benchmark_test": 0,
+    "calibration": 0,
+    "test": 0,
+    "train": 0,
+    "val": 1
+  },
+  "split_ratios": {
+    "calibration": 0.1,
+    "test": 0.05,
+    "train": 0.7,
+    "val": 0.15
+  },
+  "uncertain_labels": 0
+}
