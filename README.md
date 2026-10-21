@@ -25,7 +25,6 @@
   <a href="#datasets">Datasets</a> ·
   <a href="#training">Training</a> ·
   <a href="#performance">Performance</a> ·
-  <a href="#limitations-and-security">Limitations</a> ·
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
@@ -61,29 +60,6 @@
   <img src="assets/flowchart.png" alt="Flowchart from image upload to model promotion" width="100%">
 </p>
 
-<details>
-<summary><b>Mermaid source</b> (editable, renders natively on GitHub)</summary>
-
-```mermaid
-flowchart TD
-    A([Upload image]) --> B{Valid image?}
-    B -- No --> X1[Reject with error]
-    B -- Yes --> C{Duplicate?}
-    C -- Yes --> X2[Flag duplicate]
-    C -- No --> D["Run ResNet-50 + CLIP"]
-    D --> E{Models agree?}
-    E -- Yes --> F([Show result])
-    E -- No --> G[Add to review queue]
-    G --> H[Human labels image]
-    H --> I{Approved and eligible?}
-    I -- No --> X3[Excluded from dataset]
-    I -- Yes --> J[Build versioned dataset]
-    J --> K[Retrain and evaluate]
-    K --> L[Promote model]
-```
-
-</details>
-
 ### ✨ Features
 
 | | Area | What you get |
@@ -93,9 +69,6 @@ flowchart TD
 | 🗂️ | **Datasets** | Versioned manifests and splits, automatic exclusion of duplicates, uncertain labels and missing files, class and generator balance reports |
 | 🔄 | **Model lifecycle** | Early-stopping training, evaluation guardrails, model registry with promotion and rollback |
 | 📊 | **Analytics** | Prediction statistics, model agreement rate, side-by-side ResNet-50 vs CLIP breakdown |
-
-> [!NOTE]
-> **Planned:** group-aware splitting, which keeps images from the same prompt or session in one split. It needs prompt metadata the app does not collect yet.
 
 <p align="right"><a href="#top">↑ back to top</a></p>
 
@@ -130,9 +103,6 @@ python -m v1.simple_app
 > Databases and upload folders are created on first run. Check the API with `curl http://localhost:8100/health`.
 
 **Requirements:** Python 3.11+, 4 GB RAM (8 GB+ recommended). A CUDA GPU is optional but speeds up CLIP.
-
-> [!WARNING]
-> The `simple_app` workflow ships with authentication **disabled**. Add proper auth middleware before exposing it beyond your machine.
 
 <details>
 <summary><b>📦 Dependencies and install problems</b></summary>
@@ -349,35 +319,6 @@ curl -X POST http://localhost:8100/training/run -H "Content-Type: application/js
 <a id="human-in-the-loop"></a>
 ## 🧑‍🔬 Human-in-the-loop
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant UI as Gradio UI
-    participant API as FastAPI
-    participant M as Models
-    participant DB as SQLite + files
-
-    U->>UI: Upload image
-    UI->>API: POST /upload
-    API->>API: Validate, hash, dedup
-    API->>M: ResNet-50 + CLIP inference
-    M-->>API: Scores
-    API->>DB: Store image and predictions
-    API-->>UI: Results and warnings
-
-    U->>UI: Open review queue
-    UI->>API: GET /queue
-    U->>UI: Submit label
-    UI->>API: POST /reviews/submit
-    API->>DB: Store review (separate table)
-
-    U->>UI: Build dataset
-    UI->>API: POST /datasets/build
-    API->>DB: Query approved reviews
-    API->>DB: Write manifest, splits, report
-    API-->>UI: Dataset report
-```
-
 ### Data separation
 
 | Data | Table | Written by |
@@ -390,23 +331,18 @@ Labels never overwrite predictions, so you keep an audit trail, clean label prov
 
 ### Dataset eligibility
 
-```mermaid
-flowchart LR
-    A[Image] --> B{Approved human review?}
-    B -- no --> X1[Excluded: unreviewed]
-    B -- yes --> C{Class real or ai?}
-    C -- uncertain --> X2[Excluded: uncertain_label]
-    C -- yes --> D{File on disk?}
-    D -- no --> X3[Excluded: missing_file]
-    D -- yes --> E{Duplicate by SHA-256 or pHash?}
-    E -- yes --> X4[Excluded: duplicate]
-    E -- no --> F{Second review required?}
-    F -- missing --> X5[Excluded: needs_second_review]
-    F -- conflict --> X6[Excluded: disputed_label]
-    F -- ok --> G[Included in dataset]
-```
+An image is left out of a dataset, and counted in the report, when:
 
-A rejected or otherwise ineligible review is excluded as `rejected_or_ineligible`.
+| Reason | Code |
+|--------|------|
+| No human review yet | `unreviewed` |
+| Reviewer marked it uncertain | `uncertain_label` |
+| File deleted or moved | `missing_file` |
+| Review rejected or ineligible | `rejected_or_ineligible` |
+| Second review required but missing | `needs_second_review` |
+| Reviewers disagree | `disputed_label` |
+
+Duplicates (SHA-256 or perceptual hash) are tracked separately in `duplicate_counts`.
 
 <p align="right"><a href="#top">↑ back to top</a></p>
 
@@ -477,17 +413,6 @@ Or use **Training and Models** in the UI.
 | TPR at 1% FPR | ✅ ≥ 70% |
 | Evaluation samples | ✅ ≥ 100 |
 
-```mermaid
-flowchart LR
-    C[Candidate checkpoint] --> G{All guardrails pass?}
-    G -- no --> R[Rejected]
-    G -- yes --> A{Admin confirms?}
-    A -- no --> R
-    A -- yes --> B[Back up current model]
-    B --> P[Promote to active]
-    P -. problem found .-> RB[Rollback to backup]
-```
-
 <p align="right"><a href="#top">↑ back to top</a></p>
 
 ---
@@ -501,43 +426,6 @@ flowchart LR
 
 > [!CAUTION]
 > **Read these numbers with care.** They come from a single generator and may reflect shortcut learning (resolution or compression differences) rather than real generalisation. Cross-generator results for Midjourney, DALL-E and Stable Diffusion 2.x have **not** been measured, and CLIP + probe has no systematic evaluation in this repository.
-
-<p align="right"><a href="#top">↑ back to top</a></p>
-
----
-
-<a id="limitations-and-security"></a>
-## ⚠️ Limitations and security
-
-**Model limits**
-
-- **Not proof.** Outputs are probabilistic estimates. False positives can harm photographers and artists, so keep a human in the loop for consequential decisions.
-- **False positives** come from heavy post-processing, CG or 3D-looking scenes, unusual lighting and compression artifacts.
-- **False negatives** come from JPEG compression, blur or scaling, unseen generators, and AI-edited real photos.
-- **Generalisation.** A detector trained on one generator may miss others. Collect diverse data, tag the generator in reviews, and use CLIP as a second opinion.
-- **Adversarial robustness** is not addressed.
-
-**Dataset shortcut checklist**
-
-- [ ] Test generators are disjoint from train generators
-- [ ] No duplicate SHA-256 hashes across splits
-- [ ] Resolution and file-format distributions are balanced across classes
-- [ ] Results hold after degradations (JPEG 90, blur, resize)
-- [ ] Per-generator false positive rates are monitored
-
-**Security status**
-
-| | Protection | Status | Notes |
-|:-:|-----------|:------:|-------|
-| 📄 | File validation | ✅ | Pillow format check, 8 MB limit (configurable) |
-| 🧭 | Path safety | ✅ | UUID-prefixed safe filenames |
-| 🔁 | Duplicate handling | ✅ | SHA-256 and perceptual hash |
-| 💉 | SQL injection | ✅ | SQLAlchemy parameterised queries |
-| 🌐 | SSRF | ✅ | No external URL fetching |
-| 🔑 | Authentication | ❌ | Local-only design |
-| ⏱️ | Rate limiting | ❌ | Single-user assumption |
-| 🧼 | Review-note sanitisation | ❌ | XSS risk if rendered in a web context |
-| 🔐 | Encrypted storage | ❌ | Relies on filesystem permissions |
 
 <p align="right"><a href="#top">↑ back to top</a></p>
 
