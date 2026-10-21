@@ -1,42 +1,68 @@
+<a id="top"></a>
+
 <p align="center">
   <img src="assets/banner.png" alt="AI Image Detector" width="100%">
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
-  <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.14-red.svg" alt="PyTorch"></a>
-  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.100+-green.svg" alt="FastAPI"></a>
-  <img src="https://img.shields.io/badge/license-Research-lightgrey.svg" alt="License">
+  <img src="https://img.shields.io/badge/Python-3.11+-2f6db5?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/PyTorch-2.14-cf6a22?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch 2.14">
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-2f8a62?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Gradio-4.0+-b9791a?style=for-the-badge&logo=gradio&logoColor=white" alt="Gradio">
+  <img src="https://img.shields.io/badge/License-Research-857a6e?style=for-the-badge" alt="Research license">
 </p>
+
+<h3 align="center">Detect AI-generated images with two independent models,<br>then let humans decide what becomes training data.</h3>
 
 <p align="center">
-  <b>Detect AI-generated images with two independent models, then let humans decide what becomes training data.</b>
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#using-the-ui">UI</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#models">Models</a> ·
+  <a href="#api">API</a> ·
+  <a href="#human-in-the-loop">Human-in-the-loop</a> ·
+  <a href="#datasets">Datasets</a> ·
+  <a href="#training">Training</a> ·
+  <a href="#performance">Performance</a> ·
+  <a href="#limitations-and-security">Limitations</a> ·
+  <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
-**Contents:** [How it works](#how-it-works) · [Features](#features) · [Quick start](#quick-start) · [Using the UI](#using-the-ui) · [Architecture](#architecture) · [Models](#models) · [API](#api) · [Human-in-the-loop](#human-in-the-loop) · [Datasets](#datasets) · [Training](#training) · [Performance](#performance) · [Limitations](#limitations-and-security) · [Troubleshooting](#troubleshooting)
+<table align="center">
+  <tr>
+    <td align="center" width="25%"><h3>🧠 2</h3><b>Independent models</b><br><sub>ResNet-50 and CLIP ViT-L/14</sub></td>
+    <td align="center" width="25%"><h3>👤 Human</h3><b>Verified labels</b><br><sub>predictions never overwrite them</sub></td>
+    <td align="center" width="25%"><h3>🗂️ Versioned</h3><b>Datasets</b><br><sub>manifests, splits, reports</sub></td>
+    <td align="center" width="25%"><h3>🛡️ Guarded</h3><b>Model promotion</b><br><sub>guardrails, rollback, audit trail</sub></td>
+  </tr>
+</table>
 
 ---
 
-## How it works
+<a id="how-it-works"></a>
+## 🔍 How it works
 
 <p align="center">
   <img src="assets/pipeline.png" alt="Pipeline: upload, validate, ResNet-50 and CLIP, compare, review queue" width="100%">
 </p>
 
-1. **Upload**: the image is validated, hashed (SHA-256 + perceptual hash) and de-duplicated.
-2. **Score**: a fine-tuned **ResNet-50** and a **CLIP ViT-L/14 + linear probe** each return an AI probability.
-3. **Triage**: disagreement or low confidence puts the image at the front of the review queue.
-4. **Label**: a reviewer records the verified class. Labels are stored apart from predictions.
-5. **Improve**: approved labels become versioned datasets, which feed retraining, guardrail evaluation and model promotion.
+| | Step | What happens |
+|:-:|------|--------------|
+| **1** | 📤 **Upload** | The image is validated, hashed (SHA-256 + perceptual hash) and de-duplicated. |
+| **2** | 🧮 **Score** | A fine-tuned **ResNet-50** and a **CLIP ViT-L/14 + linear probe** each return an AI probability. |
+| **3** | 🚦 **Triage** | Disagreement or low confidence moves the image to the front of the review queue. |
+| **4** | ✍️ **Label** | A reviewer records the verified class. Labels are stored apart from predictions. |
+| **5** | 🔁 **Improve** | Approved labels become versioned datasets that feed retraining, guardrail evaluation and promotion. |
 
-### Flowchart
+### The whole flow on one page
 
 <p align="center">
   <img src="assets/flowchart.png" alt="Flowchart from image upload to model promotion" width="100%">
 </p>
 
 <details>
-<summary><b>Mermaid source (editable, renders natively on GitHub)</b></summary>
+<summary><b>Mermaid source</b> (editable, renders natively on GitHub)</summary>
 
 ```mermaid
 flowchart TD
@@ -58,23 +84,25 @@ flowchart TD
 
 </details>
 
+### ✨ Features
+
+| | Area | What you get |
+|:-:|------|--------------|
+| 🔎 | **Detection** | Dual-model inference on upload, percentage scores with High / Medium / Low confidence, disagreement highlighting |
+| 👥 | **Human review** | Pending queue with previews, structured labels (`real` / `ai` / `uncertain`), generator attribution, multi-reviewer support |
+| 🗂️ | **Datasets** | Versioned manifests and splits, automatic exclusion of duplicates, uncertain labels and missing files, class and generator balance reports |
+| 🔄 | **Model lifecycle** | Early-stopping training, evaluation guardrails, model registry with promotion and rollback |
+| 📊 | **Analytics** | Prediction statistics, model agreement rate, side-by-side ResNet-50 vs CLIP breakdown |
+
+> [!NOTE]
+> **Planned:** group-aware splitting, which keeps images from the same prompt or session in one split. It needs prompt metadata the app does not collect yet.
+
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## Features
-
-| Area | What you get |
-|------|--------------|
-| **Detection** | Dual-model inference on upload, percentage scores with High / Medium / Low confidence, disagreement highlighting |
-| **Human review** | Pending queue with previews, structured labels (`real` / `ai` / `uncertain`), generator attribution, multi-reviewer support |
-| **Datasets** | Versioned manifests and splits, automatic exclusion of duplicates, uncertain labels and missing files, class and generator balance reports |
-| **Model lifecycle** | Early-stopping training, evaluation guardrails, model registry with promotion and rollback |
-| **Analytics** | Prediction statistics, model agreement rate, side-by-side ResNet-50 vs CLIP breakdown |
-
-> **Planned:** group-aware splitting (keeping images from the same prompt or session in one split). It needs prompt metadata the app does not collect yet.
-
----
-
-## Quick start
+<a id="quick-start"></a>
+## 🚀 Quick start
 
 ```bash
 git clone <repository-url> && cd version1
@@ -92,18 +120,22 @@ ls resnet50_sd14_best.pt clip_probe.joblib
 python -m v1.simple_app
 ```
 
-| Service | URL |
-|---------|-----|
-| API | http://localhost:8100 |
-| Web UI | http://localhost:7900 |
-| Swagger docs | http://localhost:8100/docs |
+| | Service | URL |
+|:-:|---------|-----|
+| ⚙️ | API | http://localhost:8100 |
+| 🖥️ | Web UI | http://localhost:7900 |
+| 📖 | Swagger docs | http://localhost:8100/docs |
 
-Databases and upload folders are created on first run. Verify with `curl http://localhost:8100/health`.
+> [!TIP]
+> Databases and upload folders are created on first run. Check the API with `curl http://localhost:8100/health`.
 
 **Requirements:** Python 3.11+, 4 GB RAM (8 GB+ recommended). A CUDA GPU is optional but speeds up CLIP.
 
+> [!WARNING]
+> The `simple_app` workflow ships with authentication **disabled**. Add proper auth middleware before exposing it beyond your machine.
+
 <details>
-<summary><b>Dependencies and install problems</b></summary>
+<summary><b>📦 Dependencies and install problems</b></summary>
 
 Main packages: `torch==2.14.1`, `torchvision==0.29.1`, `open_clip_torch>=2.20.0`, `fastapi`, `uvicorn`, `gradio>=4.0.0`, `sqlalchemy>=2.0.0`, `scikit-learn`, `joblib`, `Pillow`, `numpy`. `mlflow` is optional.
 
@@ -130,9 +162,8 @@ python -c "from v1.simple_app.ui import launch; launch(api_base='http://localhos
 
 </details>
 
-### Configuration
-
-Set these in `.env`:
+<details>
+<summary><b>⚙️ Configuration (<code>.env</code>)</b></summary>
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -148,66 +179,78 @@ Set these in `.env`:
 | `AIDETECT_TRAINING_DIR` | `./artifacts/training` | Training outputs |
 | `AIDETECT_MODEL_REGISTRY_DIR` | `./artifacts/registry` | Model registry |
 
-For multi-user setups, `AIDETECT_ALLOWED_REVIEWERS`, `AIDETECT_REVIEWER_TOKEN`, `AIDETECT_ALLOWED_ADMINS` and `AIDETECT_ADMIN_TOKEN` are available. The `simple_app` workflow ships with authentication **disabled**, so add proper auth middleware before exposing it.
+For multi-user setups, `AIDETECT_ALLOWED_REVIEWERS`, `AIDETECT_REVIEWER_TOKEN`, `AIDETECT_ALLOWED_ADMINS` and `AIDETECT_ADMIN_TOKEN` are available.
+
+</details>
+
+<p align="right"><a href="#top">↑ back to top</a></p>
 
 ---
 
-## Using the UI
+<a id="using-the-ui"></a>
+## 🖥️ Using the UI
 
 <p align="center">
   <img src="assets/ui-upload.png" alt="Mockup of the Upload and Detect tab" width="100%">
 </p>
 <!-- The image above is an illustrative mockup. Replace assets/ui-upload.png with a real screenshot when available. -->
 
-| Tab | Purpose |
-|-----|---------|
-| **Upload and Detect** | Drop PNG, JPEG or WebP files (8 MB max each). Results show status, both model scores and warnings. |
-| **Dashboard** | Totals, real / AI split and average confidence per model, plus the agreement rate between models. |
-| **Pending Review** | Paginated queue with image preview. Statuses: ⏳ pending, ✓ approved, ✗ rejected. |
-| **Review and Label** | Load an image by ID, pick `real` / `ai` / `uncertain`, set reviewer confidence (0 to 1), and add generator, evidence source and notes. |
-| **Datasets** | Build and list versioned datasets. Options: dry run, require two reviews. |
-| **Training and Models** | Start training (`resnet50`), set epochs, batch size and learning rate, and browse past runs. |
+| | Tab | Purpose |
+|:-:|-----|---------|
+| 📤 | **Upload and Detect** | Drop PNG, JPEG or WebP files (8 MB max each). Results show status, both model scores and warnings. |
+| 📊 | **Dashboard** | Totals, real / AI split and average confidence per model, plus the agreement rate between models. |
+| ⏳ | **Pending Review** | Paginated queue with image preview. Statuses: ⏳ pending, ✅ approved, ❌ rejected. |
+| ✍️ | **Review and Label** | Load an image by ID, pick `real` / `ai` / `uncertain`, set reviewer confidence (0 to 1), and add generator, evidence source and notes. |
+| 🗂️ | **Datasets** | Build and list versioned datasets. Options: dry run, require two reviews. |
+| 🏋️ | **Training and Models** | Start training (`resnet50`), set epochs, batch size and learning rate, and browse past runs. |
 
 **Reading the scores**
 
 | Score | Level | Meaning |
-|-------|-------|---------|
-| ≥ 80% | High | Strong prediction |
-| 60 to 79% | Medium | Moderate certainty |
-| < 60% | Low | Uncertain, review recommended |
+|:-----:|:-----:|---------|
+| ≥ 80% | 🟢 **High** | Strong prediction |
+| 60 to 79% | 🟡 **Medium** | Moderate certainty |
+| < 60% | 🔴 **Low** | Uncertain, review recommended |
 
-Scores from the two models are **not directly comparable**: they differ in architecture, training and calibration, and both use uncalibrated outputs. When ResNet-50 says `real` and CLIP says `ai` (or the reverse), treat the image as a review candidate.
+> [!IMPORTANT]
+> Scores from the two models are **not directly comparable**: they differ in architecture, training and calibration, and both use uncalibrated outputs. When ResNet-50 says `real` and CLIP says `ai` (or the reverse), treat the image as a review candidate.
 
-**Review tips:** use `1.0` confidence only for definitive cases, use `uncertain` for ambiguous images, and record reasoning in the notes for the audit trail.
+**Review tips:** use `1.0` confidence only for definitive cases, use `uncertain` for ambiguous images, and record your reasoning in the notes for the audit trail.
+
+<p align="right"><a href="#top">↑ back to top</a></p>
 
 ---
 
-## Architecture
+<a id="architecture"></a>
+## 🏗️ Architecture
 
 <p align="center">
   <img src="assets/architecture.png" alt="System architecture" width="100%">
 </p>
 
-| Component | Technology | Role |
-|-----------|-----------|------|
-| Backend | FastAPI | REST API, validation, routing |
-| UI | Gradio 4.0+ | Six-tab web interface |
-| Database | SQLite + SQLAlchemy | Image metadata, predictions, human reviews |
-| Storage | File system | Original images with UUID-prefixed safe names |
-| Models | PyTorch 2.14, open_clip | ResNet-50 (trainable), CLIP ViT-L/14 (frozen) |
-| Validation | Pillow, hashlib | Format check, SHA-256, perceptual hash |
+| | Component | Technology | Role |
+|:-:|-----------|-----------|------|
+| ⚙️ | Backend | FastAPI | REST API, validation, routing |
+| 🖥️ | UI | Gradio 4.0+ | Six-tab web interface |
+| 🗄️ | Database | SQLite + SQLAlchemy | Image metadata, predictions, human reviews |
+| 📁 | Storage | File system | Original images with UUID-prefixed safe names |
+| 🧠 | Models | PyTorch 2.14, open_clip | ResNet-50 (trainable), CLIP ViT-L/14 (frozen) |
+| 🔒 | Validation | Pillow, hashlib | Format check, SHA-256, perceptual hash |
 
-### Lifecycle
+### The lifecycle loop
 
 <p align="center">
-  <img src="assets/lifecycle.png" alt="Human-in-the-loop lifecycle" width="80%">
+  <img src="assets/lifecycle.png" alt="Human-in-the-loop lifecycle" width="75%">
 </p>
+
+<p align="right"><a href="#top">↑ back to top</a></p>
 
 ---
 
-## Models
+<a id="models"></a>
+## 🤖 Models
 
-| | ResNet-50 | CLIP + linear probe |
+| | 🔵 ResNet-50 | 🟢 CLIP + linear probe |
 |---|-----------|---------------------|
 | **Role** | Primary, trainable detector | Comparison baseline |
 | **Backbone** | ImageNet (`IMAGENET1K_V2`), head 2048 → 1 + sigmoid | OpenAI ViT-L/14, frozen, 768-d embedding |
@@ -221,7 +264,7 @@ Scores from the two models are **not directly comparable**: they differ in archi
 <details>
 <summary><b>Preprocessing and training augmentation</b></summary>
 
-**ResNet-50 `fit_crop`:** resize the shortest edge to 256 px, centre-crop to 256 × 256, convert to RGB tensor, normalise with ImageNet mean `[0.485, 0.456, 0.406]` and std `[0.229, 0.224, 0.225]`.
+**ResNet-50 `fit_crop`:** resize the shortest edge to 256 px, centre-crop to 256 × 256, convert to an RGB tensor, normalise with ImageNet mean `[0.485, 0.456, 0.406]` and std `[0.229, 0.224, 0.225]`.
 
 **Augmentation when retraining:** random horizontal flip (p = 0.5), random vertical flip (p = 0.05), standard ImageNet normalisation.
 
@@ -229,24 +272,30 @@ Scores from the two models are **not directly comparable**: they differ in archi
 
 </details>
 
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## API
+<a id="api"></a>
+## 🔌 API
 
-Base URL: `http://localhost:8100`. Interactive docs with try-it-out are at `/docs`.
+Base URL `http://localhost:8100`. Interactive docs with try-it-out are at `/docs`.
 
 | Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/health` | Service status |
-| POST | `/upload` | Upload images and run inference |
-| GET | `/queue?page=1&limit=20` | Pending review queue (limit max 100) |
-| GET | `/images/{id}/file` | Serve the image file |
-| GET | `/images/{id}/predictions` | Prediction history |
-| POST | `/reviews/submit` | Add a human review |
-| GET | `/datasets` | List dataset versions |
-| POST | `/datasets/build` | Create a dataset version |
-| GET | `/training/runs` | Training history |
-| POST | `/training/run` | Start a training job |
+|:------:|----------|---------|
+| `GET` | `/health` | Service status |
+| `POST` | `/upload` | Upload images and run inference |
+| `GET` | `/queue?page=1&limit=20` | Pending review queue (limit max 100) |
+| `GET` | `/images/{id}/file` | Serve the image file |
+| `GET` | `/images/{id}/predictions` | Prediction history |
+| `POST` | `/reviews/submit` | Add a human review |
+| `GET` | `/datasets` | List dataset versions |
+| `POST` | `/datasets/build` | Create a dataset version |
+| `GET` | `/training/runs` | Training history |
+| `POST` | `/training/run` | Start a training job |
+
+<details>
+<summary><b>📋 Example requests and responses</b></summary>
 
 **Upload**
 
@@ -291,9 +340,14 @@ curl -X POST http://localhost:8100/training/run -H "Content-Type: application/js
   -d '{"dataset_version": "v0002", "model_name": "resnet50", "epochs": 10, "batch_size": 32, "learning_rate": 0.0001, "dry_run": false}'
 ```
 
+</details>
+
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## Human-in-the-loop
+<a id="human-in-the-loop"></a>
+## 🧑‍🔬 Human-in-the-loop
 
 ```mermaid
 sequenceDiagram
@@ -330,7 +384,7 @@ sequenceDiagram
 |------|-------|-----------|
 | Image records | `image_records` | Every upload |
 | Model predictions | `predictions` | Every upload |
-| Verified labels | `human_reviews` | Reviewers only |
+| ✅ Verified labels | `human_reviews` | Reviewers only |
 
 Labels never overwrite predictions, so you keep an audit trail, clean label provenance, and the ability to measure model agreement with ground truth over time.
 
@@ -354,9 +408,12 @@ flowchart LR
 
 A rejected or otherwise ineligible review is excluded as `rejected_or_ineligible`.
 
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## Datasets
+<a id="datasets"></a>
+## 🗂️ Datasets
 
 Each version is immutable:
 
@@ -373,7 +430,7 @@ datasets/v0001/
 
 - `label`: `0` = real, `1` = AI
 - `split`: `train`, `val`, `test`, `calibration` or `benchmark_test`
-- `dataset_report.json`: `eligible_total`, `class_balance`, `generator_balance`, `split_counts`, `split_ratios`, `duplicate_counts`, `excluded_counts`
+- `dataset_report.json` holds `eligible_total`, `class_balance`, `generator_balance`, `split_counts`, `split_ratios`, `duplicate_counts` and `excluded_counts`
 
 | Check | Method | Catches |
 |-------|--------|---------|
@@ -382,18 +439,22 @@ datasets/v0001/
 
 The first upload is kept; later copies are marked `duplicate_of_id` and excluded.
 
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## Training
+<a id="training"></a>
+## 🏋️ Training
 
 ```bash
-curl -X POST http://localhost:8100/training/run -H "Content-Type: application/json" -d '{"dataset_version": "v0001", "model_name": "resnet50"}'
+curl -X POST http://localhost:8100/training/run -H "Content-Type: application/json" \
+  -d '{"dataset_version": "v0001", "model_name": "resnet50"}'
 ```
 
 Or use **Training and Models** in the UI.
 
 | Parameter | Default | Range |
-|-----------|---------|-------|
+|-----------|:-------:|-------|
 | `dataset_version` | required | Must exist in `datasets/` |
 | `model_name` | required | `resnet50` (CLIP is not trainable here) |
 | `epochs` | 5 | 1 to 100 |
@@ -407,14 +468,14 @@ Or use **Training and Models** in the UI.
 
 **Output:** `artifacts/training/train-resnet50-v0001-{timestamp}.pt`, a `.json` metadata file with the same name, and the training history. A failed run reports `status: "failed"` with `last_error`.
 
-### Promotion guardrails
+### 🛡️ Promotion guardrails
 
-| Metric | Threshold |
-|--------|-----------|
-| ROC-AUC | ≥ 0.90 |
-| False positive rate on real images | ≤ 5% |
-| TPR at 1% FPR | ≥ 70% |
-| Evaluation samples | ≥ 100 |
+| Metric | Must be |
+|--------|:-------:|
+| ROC-AUC | ✅ ≥ 0.90 |
+| False positive rate on real images | ✅ ≤ 5% |
+| TPR at 1% FPR | ✅ ≥ 70% |
+| Evaluation samples | ✅ ≥ 100 |
 
 ```mermaid
 flowchart LR
@@ -427,15 +488,96 @@ flowchart LR
     P -. problem found .-> RB[Rollback to backup]
 ```
 
+<p align="right"><a href="#top">↑ back to top</a></p>
+
 ---
 
-## Project structure
+<a id="performance"></a>
+## 📈 Performance
+
+<p align="center">
+  <img src="assets/metrics.png" alt="Detection quality and inference speed" width="100%">
+</p>
+
+> [!CAUTION]
+> **Read these numbers with care.** They come from a single generator and may reflect shortcut learning (resolution or compression differences) rather than real generalisation. Cross-generator results for Midjourney, DALL-E and Stable Diffusion 2.x have **not** been measured, and CLIP + probe has no systematic evaluation in this repository.
+
+<p align="right"><a href="#top">↑ back to top</a></p>
+
+---
+
+<a id="limitations-and-security"></a>
+## ⚠️ Limitations and security
+
+**Model limits**
+
+- **Not proof.** Outputs are probabilistic estimates. False positives can harm photographers and artists, so keep a human in the loop for consequential decisions.
+- **False positives** come from heavy post-processing, CG or 3D-looking scenes, unusual lighting and compression artifacts.
+- **False negatives** come from JPEG compression, blur or scaling, unseen generators, and AI-edited real photos.
+- **Generalisation.** A detector trained on one generator may miss others. Collect diverse data, tag the generator in reviews, and use CLIP as a second opinion.
+- **Adversarial robustness** is not addressed.
+
+**Dataset shortcut checklist**
+
+- [ ] Test generators are disjoint from train generators
+- [ ] No duplicate SHA-256 hashes across splits
+- [ ] Resolution and file-format distributions are balanced across classes
+- [ ] Results hold after degradations (JPEG 90, blur, resize)
+- [ ] Per-generator false positive rates are monitored
+
+**Security status**
+
+| | Protection | Status | Notes |
+|:-:|-----------|:------:|-------|
+| 📄 | File validation | ✅ | Pillow format check, 8 MB limit (configurable) |
+| 🧭 | Path safety | ✅ | UUID-prefixed safe filenames |
+| 🔁 | Duplicate handling | ✅ | SHA-256 and perceptual hash |
+| 💉 | SQL injection | ✅ | SQLAlchemy parameterised queries |
+| 🌐 | SSRF | ✅ | No external URL fetching |
+| 🔑 | Authentication | ❌ | Local-only design |
+| ⏱️ | Rate limiting | ❌ | Single-user assumption |
+| 🧼 | Review-note sanitisation | ❌ | XSS risk if rendered in a web context |
+| 🔐 | Encrypted storage | ❌ | Relies on filesystem permissions |
+
+<p align="right"><a href="#top">↑ back to top</a></p>
+
+---
+
+<a id="troubleshooting"></a>
+## 🧰 Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `FileNotFoundError: ResNet checkpoint not found` | Check `ls -lh resnet50_sd14_best.pt clip_probe.joblib`, or point `AIDETECT_MODEL_PATH` and `AIDETECT_CLIP_MODEL_PATH` in `.env` at the real files. |
+| Cannot reach `http://localhost:8100` | Run `curl localhost:8100/health`. Find a port conflict with `lsof -i :8100`, free it with `kill $(lsof -t -i:8100)`, then restart. |
+| `CUDA out of memory` | Lower `batch_size` (for example 16), or run on CPU with `export CUDA_VISIBLE_DEVICES=""`. |
+| `psutil is required for memory guardrails` | `pip install psutil` |
+| `sqlite3.OperationalError: database is locked` | Several processes share one SQLite file. Run `pkill -f "python -m v1"` and start a single instance. |
+| `Address already in use` (Gradio) | Set `UI_PORT=7901` in `.env`, or `kill $(lsof -t -i:7900)`. |
+
+**Debugging:** `export AIDETECT_DATABASE_ECHO=true FASTAPI_LOG_LEVEL=DEBUG`. To inspect data, run `python view_db.py [path/to.db]`.
+
+> [!CAUTION]
+> **Reset deletes everything** (databases, uploads, datasets and training artifacts):
+> ```bash
+> rm -f ai_detector.db data/simple_app.db && rm -rf data/uploads/* datasets/v* artifacts/training/*
+> ```
+
+<p align="right"><a href="#top">↑ back to top</a></p>
+
+---
+
+## 📁 Project structure and tests
+
+<details>
+<summary><b>Project structure</b></summary>
 
 ```
 .
 ├── resnet50_sd14_best.pt        # ResNet-50 checkpoint
 ├── clip_probe.joblib            # CLIP linear probe
 ├── .env.example · requirements.txt · pyproject.toml · view_db.py
+├── assets/                      # README images
 ├── data/                        # simple_app.db + uploads/
 ├── datasets/                    # versioned datasets (v0001, ...)
 ├── artifacts/                   # training outputs and model registry
@@ -455,9 +597,10 @@ flowchart LR
 
 `src/v1/api.py` and `src/v1/training.py` are legacy and unused by the current workflow.
 
----
+</details>
 
-## Testing
+<details>
+<summary><b>Running the tests</b></summary>
 
 ```bash
 pytest -q                                          # all tests
@@ -478,86 +621,10 @@ pytest --cov=src/v1 --cov-report=html              # coverage report
 
 Tests use isolated temporary databases and upload folders, and mock model inference so no checkpoints are loaded.
 
----
-
-## Performance
-
-### Detection quality
-
-ResNet-50 fine-tuned on Stable Diffusion 1.4, evaluated on an SD 1.4 validation set:
-
-| Accuracy | ROC-AUC | TPR @ 1% FPR | Real-image FPR |
-|----------|---------|--------------|----------------|
-| 99.8% | 0.9997 | 98.7% | 0.3% |
-
-> **Read these numbers with care.** They come from a single generator and may reflect shortcut learning (resolution or compression differences) rather than real generalisation. Cross-generator results for Midjourney, DALL-E and Stable Diffusion 2.x have **not** been measured, and CLIP + probe has no systematic evaluation in this repository.
-
-### Inference speed
-
-Intel i7-10700K, 32 GB RAM; file I/O and preprocessing excluded.
-
-| Model | Device | Batch 1 | Batch 32 |
-|-------|--------|---------|----------|
-| ResNet-50 | CPU | ~50 ms | ~800 ms |
-| CLIP | CPU | ~200 ms | ~2000 ms |
-| ResNet-50 | CUDA | ~8 ms | n/a |
-| CLIP | CUDA | ~25 ms | n/a |
+</details>
 
 ---
 
-## Limitations and security
-
-**Model limits**
-
-- **Not proof.** Outputs are probabilistic estimates. False positives can harm photographers and artists, so keep a human in the loop for consequential decisions.
-- **False positives** come from heavy post-processing, CG or 3D-looking scenes, unusual lighting and compression artifacts.
-- **False negatives** come from JPEG compression, blur or scaling, unseen generators, and AI-edited real photos.
-- **Generalisation.** A detector trained on one generator may miss others. Collect diverse data, tag the generator in reviews, and use CLIP as a second opinion.
-- **Adversarial robustness** is not addressed.
-
-**Dataset shortcut checklist**
-
-- [ ] Test generators are disjoint from train generators
-- [ ] No duplicate SHA-256 hashes across splits
-- [ ] Resolution and file-format distributions are balanced across classes
-- [ ] Results hold after degradations (JPEG 90, blur, resize)
-- [ ] Per-generator false positive rates are monitored
-
-**Security**
-
-| Protection | Implementation |
-|------------|----------------|
-| File validation | Pillow format check, 8 MB limit (configurable) |
-| Path safety | UUID-prefixed safe filenames |
-| Duplicate handling | SHA-256 and perceptual hash |
-| SQL injection | SQLAlchemy parameterised queries |
-| SSRF | No external URL fetching |
-
-**Not implemented:** authentication and authorisation (local-only design), rate limiting, sanitisation of review notes (XSS risk if rendered in a web context), and encrypted storage.
-
----
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `FileNotFoundError: ResNet checkpoint not found` | Check `ls -lh resnet50_sd14_best.pt clip_probe.joblib`, or point `AIDETECT_MODEL_PATH` and `AIDETECT_CLIP_MODEL_PATH` in `.env` at the real files. |
-| Cannot reach `http://localhost:8100` | Run `curl localhost:8100/health`. Find a port conflict with `lsof -i :8100`, free it with `kill $(lsof -t -i:8100)`, then restart. |
-| `CUDA out of memory` | Lower `batch_size` (for example 16), or run on CPU with `export CUDA_VISIBLE_DEVICES=""`. |
-| `psutil is required for memory guardrails` | `pip install psutil` |
-| `sqlite3.OperationalError: database is locked` | Several processes share one SQLite file. Run `pkill -f "python -m v1"` and start a single instance. |
-| `Address already in use` (Gradio) | Set `UI_PORT=7901` in `.env`, or `kill $(lsof -t -i:7900)`. |
-
-**Debugging:** `export AIDETECT_DATABASE_ECHO=true FASTAPI_LOG_LEVEL=DEBUG`. To inspect data, run `python view_db.py [path/to.db]`.
-
-**Reset (deletes everything):**
-
-```bash
-rm -f ai_detector.db data/simple_app.db && rm -rf data/uploads/* datasets/v* artifacts/training/*
-```
-
----
-
-## License
-
-Released under the **Research License** (see `LICENSE`): academic and research use, modification and distribution are allowed; commercial use needs permission.
+<p align="center">
+  <sub>Released under the <b>Research License</b> (see <code>LICENSE</code>): academic and research use, modification and distribution are allowed; commercial use needs permission.</sub>
+</p>
